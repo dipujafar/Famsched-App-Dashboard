@@ -1,11 +1,10 @@
 "use client";
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Loader2 } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -17,22 +16,67 @@ import {
 import Link from "next/link";
 import { LoginFormValues, loginSchema } from "./Schema";
 import LogoSection from "../LogoSection";
+import { useLoginMutation } from "@/redux/api/authApi";
+import { Error_Modal } from "@/utils/modals";
+import { useAppDispatch } from "@/redux/hooks";
+import { useRouter } from "next/navigation";
+import { setUser } from "@/redux/features/authSlice";
+import { jwtDecode } from "jwt-decode";
+import { toast } from "sonner";
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const [login, { isLoading }] = useLoginMutation();
+  const dispatch = useAppDispatch();
+  const route = useRouter();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      emailOrPhone: "",
+      email: "",
       password: "",
     },
   });
 
-  const onSubmit = (values: LoginFormValues) => {
-    console.log(values);
-    // Handle login logic here
+
+
+
+  // form submitting for login 
+  const onSubmit = async (values: LoginFormValues) => {
+    try {
+      const formattedValues: Record<string, string> = {
+        email: values.email as string,
+        password: values.password as string,
+        fcmToken: "asfdasfsdafsd"
+      };
+      const res = await login(formattedValues).unwrap();
+      // @ts-ignore
+      if (jwtDecode(res?.data?.accessToken)?.role !== "admin") {
+        Error_Modal({ title: "You are not valid admin" });
+        return;
+      }
+      // if(jwtDecode(res?.data?.accessToken)?.rp)
+
+
+
+      dispatch(
+        setUser({
+          user: jwtDecode(res?.data?.accessToken),
+          token: res?.data?.accessToken,
+        })
+      );
+      toast.success("Login Success", { duration: 1000 });
+      route.push("/dashboard");
+    }
+    catch (error: any) {
+      console.log(error);
+      Error_Modal({ title: error?.data?.errorSources?.[0]?.message || error?.data?.message });
+    }
   };
+
+
+
+
 
   return (
     <div className="h-screen flex flex-col md:flex-row">
@@ -57,11 +101,11 @@ export function LoginForm() {
               {/* Email/Phone Input */}
               <FormField
                 control={form.control}
-                name="emailOrPhone"
+                name="email"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm font-medium text-gray-700">
-                      Email / Phone Number
+                      Email
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
@@ -94,7 +138,7 @@ export function LoginForm() {
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="Password"
-                           className="pl-10 h-12 border-gray-300 focus:border-main-color focus:ring-main-color"
+                          className="pl-10 h-12 border-gray-300 focus:border-main-color focus:ring-main-color"
                           {...field}
                         />
                         <button
@@ -130,8 +174,9 @@ export function LoginForm() {
                 type="submit"
                 style={{ background: "linear-gradient(90deg, #3C353B 0%, #785E57 100%)" }}
                 className="w-full h-12 bg-main-color hover:bg-red-600 text-white font-medium text-base"
+                disabled={isLoading}
               >
-                Log In
+                Log In {isLoading && <Loader2 className="animate-spin ml-2" />}
               </Button>
             </form>
           </Form>

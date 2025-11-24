@@ -15,6 +15,8 @@ import LogoSection from "../LogoSection";
 import { useRouter } from "next/navigation";
 import { useRef, type KeyboardEvent } from "react";
 import { OtpFormValues, otpSchema } from "./schema";
+import { useVerifyOtpMutation } from "@/redux/api/authApi";
+import { Error_Modal } from "@/utils/modals";
 
 export function OtpVerificationForm() {
   const form = useForm<OtpFormValues>({
@@ -23,6 +25,7 @@ export function OtpVerificationForm() {
       otp: "",
     },
   });
+  const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
   const router = useRouter();
 
   // Create refs for each input
@@ -77,9 +80,15 @@ export function OtpVerificationForm() {
     }
   };
 
-  const onSubmit = (values: OtpFormValues) => {
-    console.log("OTP submitted:", values);
-    router.push("/reset-password");
+  const onSubmit = async (values: OtpFormValues) => {
+    try {
+      const res = await verifyOtp(values).unwrap();
+      sessionStorage?.setItem("resetPasswordToken", res?.data?.token);
+      sessionStorage?.removeItem("forgotPasswordToken");
+      router.replace("/reset-password");
+    } catch (error: any) {
+       Error_Modal({ title: error?.data?.errorSources?.[0]?.message || error?.data?.message });
+    }
     // Handle OTP verification logic here
     // router.push("/reset-password");
   };

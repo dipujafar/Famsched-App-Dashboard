@@ -1,6 +1,6 @@
 import * as z from "zod";
 export const loginSchema = z.object({
-  emailOrPhone: z
+  email: z
     .string()
     .min(1, "Email")
     .refine((value) => {
@@ -12,8 +12,7 @@ export const loginSchema = z.object({
     }, "Please enter a valid email address or phone number"),
   password: z
     .string()
-    .min(6, "Password must be at least 6 characters")
-    .max(100, "Password must be less than 100 characters"),
+    .min(1, "Password is required")
 });
 
 export type LoginFormValues = z.infer<typeof loginSchema>;

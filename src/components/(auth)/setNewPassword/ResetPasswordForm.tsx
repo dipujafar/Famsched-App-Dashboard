@@ -1,11 +1,10 @@
 "use client";
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Lock, Eye, EyeOff } from "lucide-react";
+import { Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -15,13 +14,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import LogoSection from "../LogoSection";
-
 import { useRouter } from "next/navigation";
 import { ResetPasswordFormValues, resetPasswordSchema } from "./schema";
+import { Error_Modal } from "@/utils/modals";
+import { useResetPasswordMutation } from "@/redux/api/authApi";
 
 export function ResetPasswordForm() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [resetPassword, { isLoading }] = useResetPasswordMutation();
 
   const form = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
@@ -32,10 +33,19 @@ export function ResetPasswordForm() {
   });
   const router = useRouter();
 
-  const onSubmit = (values: ResetPasswordFormValues) => {
-    console.log("Password reset submitted:", values);
+  const onSubmit = async (values: ResetPasswordFormValues) => {
+    const formattedData = {
+      newPassword: values.confirmPassword,
+      confirmPassword: values.newPassword,
+    };
 
-    router.push("/login");
+    try {
+      await resetPassword(formattedData).unwrap();
+      sessionStorage?.removeItem("resetPasswordToken");
+      router.replace("/login");
+    } catch (error: any) {
+      Error_Modal({ title: error?.data?.message });
+    }
   };
 
   return (
@@ -140,8 +150,9 @@ export function ResetPasswordForm() {
                     "linear-gradient(90deg, #3C353B 0%, #785E57 100%)",
                 }}
                 className="w-full h-12 bg-main-color hover:bg-red-700 text-white font-medium text-base"
+                disabled={isLoading}
               >
-                Reset Password
+                Reset Password  {isLoading && <Loader2 className="animate-spin ml-2" />}
               </Button>
             </form>
           </Form>

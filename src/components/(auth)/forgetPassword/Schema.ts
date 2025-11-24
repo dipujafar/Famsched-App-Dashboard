@@ -1,8 +1,8 @@
 import * as z from "zod";
 export const forgetPassSchema = z.object({
-  emailOrPhone: z
+  email: z
     .string()
-    .min(1, "Email")
+    .min(1, "Email is required")
     .refine((value) => {
       // Check if it's a valid email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

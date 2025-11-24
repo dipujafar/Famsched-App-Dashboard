@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail } from "lucide-react";
+import { Loader2, Mail } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -15,18 +15,31 @@ import {
 import LogoSection from "../LogoSection";
 import { ForgetPassFormValues, forgetPassSchema } from "./Schema";
 import { useRouter } from "next/navigation";
+import { useForgetPasswordMutation } from "@/redux/api/authApi";
+import { Error_Modal } from "@/utils/modals";
 
 export function ForgetPassForm() {
   const form = useForm<ForgetPassFormValues>({
     resolver: zodResolver(forgetPassSchema),
     defaultValues: {
-      emailOrPhone: "",
+      email: "",
     },
   });
+  const [forgetPass, { isLoading }] = useForgetPasswordMutation();
   const router = useRouter();
 
-  const onSubmit = (values: ForgetPassFormValues) => {
-    router.push("/verify-email");
+  
+
+
+  const onSubmit = async (values: ForgetPassFormValues) => {
+    try {
+      const res = await forgetPass(values).unwrap();
+      sessionStorage?.setItem("forgotPasswordToken", res?.data?.token);
+      router.push("/verify-email");
+    } catch (error: any) {
+       Error_Modal({ title: error?.data?.errorSources?.[0]?.message || error?.data?.message });
+    }
+
   };
 
   return (
@@ -53,7 +66,7 @@ export function ForgetPassForm() {
               {/* Email/Phone Input */}
               <FormField
                 control={form.control}
-                name="emailOrPhone"
+                name="email"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm font-medium text-gray-700">
@@ -83,8 +96,9 @@ export function ForgetPassForm() {
                     "linear-gradient(90deg, #3C353B 0%, #785E57 100%)",
                 }}
                 className="w-full h-12 bg-main-color hover:bg-red-700 text-white font-medium text-base"
+                disabled={isLoading}
               >
-                Send OTP
+                Send OTP {isLoading && <Loader2 className="animate-spin ml-2" />}
               </Button>
             </form>
           </Form>
