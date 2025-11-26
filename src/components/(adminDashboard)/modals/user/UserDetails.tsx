@@ -1,12 +1,23 @@
-import { Avatar, Modal } from "antd";
+import { Modal } from "antd";
+import { useEffect, useState } from "react";
 import { RiCloseLargeLine } from "react-icons/ri";
+import moment from "moment";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type TPropsType = {
   open: boolean;
   setOpen: (collapsed: boolean) => void;
+  data: any;
 };
 
-const UserDetails = ({ open, setOpen }: TPropsType) => {
+const UserDetails = ({ open, setOpen, data }: TPropsType) => {
+  const [currentData, setCurrentData] = useState<any>({});
+
+  useEffect(() => {
+    setCurrentData(data);
+  }, [data]);
+
+
   return (
     <Modal
       open={open}
@@ -32,31 +43,33 @@ const UserDetails = ({ open, setOpen }: TPropsType) => {
 
         {/* --------------------- user details information ---------------------------- */}
         <div className="w-fit mx-auto relative">
-          <Avatar src="/user_image.png" size={150} />
-          <div className="bg-green-600 absolute size-3 bottom-6 right-3 rounded-full border-2"></div>
+          <Avatar className="size-38">
+            <AvatarImage className="size-36" src={currentData?.profile} />
+            <AvatarFallback className=" flex-center uppercase text-2xl bg-gray-200 text-black  size-36" >{currentData?.name?.split(" ")?.length ? `${currentData?.name?.split(" ")?.[0]?.charAt(0)}${currentData?.name?.split(" ")?.[1]?.charAt(0)}` : currentData?.name?.charAt(0)}  </AvatarFallback>
+          </Avatar>
         </div>
 
         <div className="mt-10">
           <div className="flex justify-between bg-[#ECF2F0]  py-3 px-2">
             <h4>User name :</h4>
-            <p className="font-medium">Cody Fisher</p>
+            <p className="font-medium">{currentData?.name}</p>
           </div>
           <div className="flex justify-between   py-3 px-2">
             <h4>Email :</h4>
-            <p className="font-medium">codyfisher@gmail.com </p>
+            <p className="font-medium">{currentData?.email} </p>
           </div>
           <div className="flex justify-between bg-[#ECF2F0]  py-3 px-2">
             <h4>Contact Number :</h4>
-            <p className="font-medium">+92121514321</p>
+            <p className="font-medium">{currentData?.phone}</p>
           </div>
           <div className="flex justify-between   py-3 px-2">
-            <h4>Location :</h4>
-            <p className="font-medium">Vilnius, Lithuania</p>
+            <h4>Address :</h4>
+            <p className="font-medium">{currentData?.address}</p>
           </div>
 
           <div className="flex justify-between  py-3 px-2 bg-[#ECF2F0]">
             <h4>Date of Join :</h4>
-            <p className="font-medium">11 Sep, 2025</p>
+            <p className="font-medium">{moment(currentData?.createdAt).format("ll")}</p>
           </div>
         </div>
       </div>

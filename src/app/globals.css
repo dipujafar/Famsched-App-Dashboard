@@ -80,7 +80,7 @@
 }
 
 .ant-menu-item-selected {
-  background: linear-gradient(90deg, #3C353B 0%, #785E57 100%) !important;
+  background: linear-gradient(90deg, #3c353b 0%, #785e57 100%) !important;
   color: #ffffff !important;
   border-radius: 50px !important;
 }
@@ -113,7 +113,7 @@
 }
 
 /* side bar bar border */
-.ant-layout-sider{
+.ant-layout-sider {
   border-right: 1px solid #e8e8e8 !important;
 }
 
@@ -134,12 +134,11 @@
   width: 0px;
 }
 
-
 /* default icon color change */
-.anticon-search{
+.anticon-search {
   color: #fff !important;
 }
-.anticon-search:hover{
+.anticon-search:hover {
   color: #000 !important;
 }
 @layer base {
@@ -204,5 +203,11 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .flex-center {
+    @apply flex items-center justify-center;
   }
 }

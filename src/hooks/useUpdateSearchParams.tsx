@@ -22,7 +22,7 @@ export function useUpdateSearchParams(targetId?: string) {
     });
 
     const url = `?${params.toString()}`;
-    router.push(url, { scroll: false });
+    router.push(url, { scroll: false }); 
 
     // Smooth scroll to target section after navigation
     if (targetId) {
