@@ -5,6 +5,7 @@ export const tagTypes = {
   privacyPolicy: "PrivacyPolicy",
   profile: "Profile",
   users: "Users",
+  dashboard: "Dashboard",
 };
 
 export const tagTypesList = [
@@ -14,4 +15,5 @@ export const tagTypesList = [
   tagTypes.privacyPolicy,
   tagTypes.profile,
   tagTypes.users,
+  tagTypes.dashboard,
 ];

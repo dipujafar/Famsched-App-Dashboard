@@ -1,15 +1,15 @@
-"use client";
-import { Image, message, Popconfirm, PopconfirmProps, TableProps } from "antd";
+"use client";;
+import { Image, message, PopconfirmProps, TableProps } from "antd";
 import { useState } from "react";
 import DataTable from "@/utils/DataTable";
 import { Eye } from "lucide-react";
 import UserDetails from "@/components/(adminDashboard)/modals/user/UserDetails";
-import { CgUnblock } from "react-icons/cg";
 import { useGetAllUsersQuery } from "@/redux/api/userApi";
 import TableSkeleton from "@/components/shared/TableSkeleton";
 import { AvatarFallback } from "@radix-ui/react-avatar";
 import { Avatar } from "@/components/ui/avatar";
 import moment from "moment";
+import BlockUser from "@/components/shared/BlockUser";
 
 type TDataType = {
   key?: number;
@@ -18,15 +18,11 @@ type TDataType = {
   email: string;
   date: string;
   profile: string;
-  phoneNumber: string;
+  status: string;
+  _id: string;
 };
 
 
-
-const confirmBlock: PopconfirmProps["onConfirm"] = (e) => {
-  console.log(e);
-  message.success("Blocked the user");
-};
 
 const RecentAccountList = () => {
   const [open, setOpen] = useState(false);
@@ -56,7 +52,8 @@ const RecentAccountList = () => {
           /> : <Avatar > <AvatarFallback className="w-full flex-center uppercase text-lg bg-gray-200 text-black " >{text?.charAt(0)} </AvatarFallback></Avatar>
 
           }
-          {text}
+          <span>{text}</span>
+          <span> {record?.status === "blocked" && <h4 className="ml-2 bg-red-400 text-white px-2 rounded">Blocked</h4>}</span>
         </p>
       ),
     },
@@ -83,15 +80,7 @@ const RecentAccountList = () => {
         <div className="flex items-center gap-x-1">
           <Eye size={22} color="#5C5C5C" onClick={() => { setOpen(!open); setCurrentData(record) }} />
 
-          <Popconfirm
-            title="Block the user"
-            description="Are you sure to block this user?"
-            onConfirm={confirmBlock}
-            okText="Yes"
-            cancelText="No"
-          >
-            <CgUnblock size={22} color="#CD0335" />
-          </Popconfirm>
+          <BlockUser id={record?._id} isActive={record?.status === "active" ? true : false} />
         </div>
       ),
     },

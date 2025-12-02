@@ -45,7 +45,7 @@ const UserDetails = ({ open, setOpen, data }: TPropsType) => {
         <div className="w-fit mx-auto relative">
           <Avatar className="size-38">
             <AvatarImage className="size-36" src={currentData?.profile} />
-            <AvatarFallback className=" flex-center uppercase text-2xl bg-gray-200 text-black  size-36" >{currentData?.name?.split(" ")?.length ? `${currentData?.name?.split(" ")?.[0]?.charAt(0)}${currentData?.name?.split(" ")?.[1]?.charAt(0)}` : currentData?.name?.charAt(0)}  </AvatarFallback>
+            <AvatarFallback className=" flex-center uppercase text-2xl bg-gray-200 text-black  size-36" >{currentData?.name?.split(" ")?.length > 1 ? `${currentData?.name?.split(" ")?.[0]?.charAt(0)}${currentData?.name?.split(" ")?.[1]?.charAt(0)}` : currentData?.name?.charAt(0)}  </AvatarFallback>
           </Avatar>
         </div>
 
@@ -64,7 +64,7 @@ const UserDetails = ({ open, setOpen, data }: TPropsType) => {
           </div>
           <div className="flex justify-between   py-3 px-2">
             <h4>Address :</h4>
-            <p className="font-medium">{currentData?.address}</p>
+            <p className="font-medium">{currentData?.address || "N/A"}</p>
           </div>
 
           <div className="flex justify-between  py-3 px-2 bg-[#ECF2F0]">

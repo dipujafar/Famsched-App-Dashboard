@@ -1,23 +1,16 @@
-"use client";
-import {
-  Image,
-  Input,
-  message,
-  Popconfirm,
-  PopconfirmProps,
-  TableProps,
-} from "antd";
+"use client";;
+import { Image, Input, message, PopconfirmProps, TableProps } from "antd";
 import { useState } from "react";
 import DataTable from "@/utils/DataTable";
 import { Eye } from "lucide-react";
 import UserDetails from "@/components/(adminDashboard)/modals/user/UserDetails";
-import { CgUnblock } from "react-icons/cg";
 import { useGetAllUsersQuery } from "@/redux/api/userApi";
 import TableSkeleton from "@/components/shared/TableSkeleton";
 import { useSearchParams } from "next/navigation";
 import { useDebounce } from "use-debounce";
 import moment from "moment";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import BlockUser from "@/components/shared/BlockUser";
 
 type TDataType = {
   key?: number;
@@ -26,15 +19,11 @@ type TDataType = {
   email: string;
   date: string;
   profile: string;
-  phoneNumber: string;
+  _id: string;
+  status: string;
 };
 
 
-
-const confirmBlock: PopconfirmProps["onConfirm"] = (e) => {
-  console.log(e);
-  message.success("Blocked the user");
-};
 
 const AccountDetailsTable = () => {
   const [open, setOpen] = useState(false);
@@ -78,9 +67,9 @@ const AccountDetailsTable = () => {
             height={40}
             className="rounded-full"
           /> : <Avatar > <AvatarFallback className="w-full flex-center uppercase text-lg bg-gray-200 text-black " >{text?.charAt(0)} </AvatarFallback></Avatar>
-
           }
-          {text}
+          <span> {text}</span>
+          <span> {record?.status === "blocked" && <h4 className="ml-2 bg-red-400 text-white px-2 rounded">Blocked</h4>}</span>
         </p>
       ),
     },
@@ -108,15 +97,7 @@ const AccountDetailsTable = () => {
         <div className="flex items-center gap-x-1">
           <Eye size={22} color="#5C5C5C" onClick={() => { setOpen(true); setCurrentData(record) }} />
 
-          <Popconfirm
-            title="Block the user"
-            description="Are you sure to block this user?"
-            onConfirm={confirmBlock}
-            okText="Yes"
-            cancelText="No"
-          >
-            <CgUnblock size={22} color="#CD0335" />
-          </Popconfirm>
+          <BlockUser id={record?._id} isActive={record?.status === "active" ? true : false} />
         </div>
       ),
     },
@@ -127,7 +108,7 @@ const AccountDetailsTable = () => {
       <div className="max-w-[400px] ml-auto mb-2 pt-2">
         <Input.Search placeholder="Search here..." size="large" onChange={(e) => setSearchText(e.target.value)} />
       </div>
-      <DataTable columns={columns} data={users} pageSize={10} total={usersData?.data?.meta?.total}></DataTable>
+      <DataTable columns={columns} data={users} pageSize={Number(limit)} total={usersData?.data?.meta?.total}></DataTable>
       <UserDetails open={open} setOpen={setOpen} data={currentData}></UserDetails>
     </div>
   );

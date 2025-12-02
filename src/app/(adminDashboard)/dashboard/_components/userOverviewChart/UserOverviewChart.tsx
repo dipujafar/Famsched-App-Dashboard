@@ -1,10 +1,6 @@
-"use client";
-import { Card, CardTitle } from "@/components/ui/card";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+"use client";;
+import { Card } from "@/components/ui/card";
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { ChevronDown } from "lucide-react";
 import {
@@ -13,8 +9,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { earningData } from "./data";
+import UserOverviewChartSkeleton from "../skeletons/UserOverviewChartSkeleton";
 
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
@@ -32,12 +27,18 @@ const CustomTooltip = ({ active, payload }: any) => {
 
 interface EarningsChartProps {
   className?: string;
+  loading?: boolean;
+  data?: any;
+  selectedYear?: string;
+  setSelectedYear?: any;
 }
 
-const UserOverviewChart = ({ className }: EarningsChartProps) => {
+const UserOverviewChart = ({ className, loading, data, selectedYear, setSelectedYear }: EarningsChartProps) => {
   const currentYear = new Date().getFullYear();
   const lastFiveYears = Array.from({ length: 5 }, (_, i) => currentYear - i);
-  const [selectedYear, setSetSelectedYear] = useState(currentYear);
+ 
+
+  if (loading) return <UserOverviewChartSkeleton />
 
   return (
     <Card className={`p-6 bg-[#fff] border-none rounded-2xl  ${className}`}>
@@ -58,7 +59,7 @@ const UserOverviewChart = ({ className }: EarningsChartProps) => {
                 <div className="flex flex-col">
                   {lastFiveYears?.map((year) => (
                     <Button
-                      onClick={() => setSetSelectedYear(year)}
+                      onClick={() => setSelectedYear(year)}
                       key={year}
                       variant="ghost"
                       className="justify-start"
@@ -82,7 +83,7 @@ const UserOverviewChart = ({ className }: EarningsChartProps) => {
         >
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
-              data={earningData}
+              data={data}
               margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
               className="h-[300px]"
             >
@@ -107,7 +108,7 @@ const UserOverviewChart = ({ className }: EarningsChartProps) => {
 
               <Area
                 type="monotone"
-                dataKey="user"
+                dataKey="total"
                 stroke="#00000066"
                 strokeWidth={1}
                 fillOpacity={1}

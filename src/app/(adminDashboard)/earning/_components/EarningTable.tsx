@@ -76,7 +76,7 @@ const EarningTable = () => {
         <Input.Search placeholder="Search here..." size="large" />
       </div>
       <DataTable columns={columns} data={data} pageSize={10}></DataTable>
-      <UserDetails open={open} setOpen={setOpen}></UserDetails>
+      {/* <UserDetails open={open} setOpen={setOpen}></UserDetails> */}
     </div>
   );
 };
