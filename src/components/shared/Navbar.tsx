@@ -3,7 +3,6 @@ import { Avatar, Badge, Flex } from "antd";
 import { FaBars } from "react-icons/fa6";
 import { IoNotificationsOutline } from "react-icons/io5";
 import avatarImg from "@/assets/image/user_image.png";
-
 import Link from "next/link";
 import { ChevronRight, X } from "lucide-react";
 import {
@@ -15,6 +14,11 @@ import {
   MenubarShortcut,
   MenubarTrigger,
 } from "../ui/menubar";
+import { useGetProfileQuery } from "@/redux/api/profileApi";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { useRouter } from "next/navigation";
+import { logout } from "@/redux/features/authSlice";
+import { Skeleton } from "../ui/skeleton";
 
 type TNavbarProps = {
   collapsed: boolean;
@@ -22,6 +26,13 @@ type TNavbarProps = {
 };
 
 const Navbar = ({ collapsed, setCollapsed }: TNavbarProps) => {
+  const user: any = useAppSelector((state) => state.auth.user);
+  const { data, isLoading } = useGetProfileQuery(undefined, { skip: !user });
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+
+
+
   return (
     <div className="flex items-center justify-between w-[97%] font-poppins">
       {/* Header left side */}
@@ -38,7 +49,7 @@ const Navbar = ({ collapsed, setCollapsed }: TNavbarProps) => {
         </button>
         <div className="flex flex-col ">
           <h2 className="md:text-xl text-lg  font-medium text-[#3A3C3B]">
-            Welcome, Mr. Admin
+            <span className="flex gap-x-1 items-center">  Welcome, {isLoading ? <Skeleton className="h-6 w-24" /> : data?.data?.name?.split(" ")[0]}</span>
             <span className="block  text-sm font-normal">Have a nice day!</span>
           </h2>
         </div>
@@ -70,7 +81,7 @@ const Navbar = ({ collapsed, setCollapsed }: TNavbarProps) => {
           <MenubarMenu >
             <MenubarTrigger className="shadow-none px-0 rounded-full py-2">
               <div className="flex items-center gap-x-2  px-2 h-fit">
-                <p className="text-black">Mr. Admin</p>
+                <p className="text-black">{isLoading ? <Skeleton className="h-6 w-24" /> : data?.data?.name}</p>
                 <Avatar
                   src={avatarImg.src}
                   size={40}
@@ -89,11 +100,11 @@ const Navbar = ({ collapsed, setCollapsed }: TNavbarProps) => {
                 </MenubarItem>
               </Link>
               <MenubarSeparator />
-              <Link href={"/login"}>
-                <MenubarItem className="hover:bg-gray-100 cursor-pointer">
-                  Logout
-                </MenubarItem>
-              </Link>
+
+              <MenubarItem onClick={() => { dispatch(logout()); router?.refresh() }} className="hover:bg-gray-100 cursor-pointer">
+                Logout
+              </MenubarItem>
+
             </MenubarContent>
           </MenubarMenu>
         </Menubar>

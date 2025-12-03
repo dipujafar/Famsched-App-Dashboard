@@ -1,13 +1,14 @@
 "use client";
-import { Button, ConfigProvider, Form, Input } from "antd";
-import Image from "next/image";
+import { Button, ConfigProvider, Form, Image, Input } from "antd";
 import { useRouter } from "next/navigation";
 import { FaArrowLeft } from "react-icons/fa6";
 import { FiEdit } from "react-icons/fi";
-import profile from "@/assets/image/adminProfile.png";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Camera, Trash2, X } from "lucide-react";
+import { Camera, Trash2 } from "lucide-react";
+import { useGetProfileQuery, useUpdateProfileMutation } from "@/redux/api/profileApi";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import ProfileFormSkeleton from "./ProfileFormSkeleton";
 
 const PersonalInformationContainer = () => {
   const route = useRouter();
@@ -15,14 +16,35 @@ const PersonalInformationContainer = () => {
   const [edit, setEdit] = useState(false);
   const [fileName, setFileName] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const { data, isLoading } = useGetProfileQuery(undefined);
+  const [updateProfile, { isLoading: updateProfileLoading }] =
+    useUpdateProfileMutation();
 
   // @ts-expect-error: Ignoring TypeScript error due to inferred 'any' type for 'values' which is handled in the form submit logic
-  const handleSubmit = (values) => {
-    toast.success("Successfully Change personal information", {
-      duration: 1000,
-    });
-    setEdit(false);
+  const handleSubmit = async (values) => {
+    const formattedData = {
+      name: values.name,
+      phoneNumber: values.phone,
+    };
+    const formData = new FormData();
+    formData.append("data", JSON.stringify(formattedData));
+
+
+    if (fileName) {
+      formData.append("profile", fileName);
+    }
+    try {
+      await updateProfile(formData).unwrap();
+      toast.success("Successfully Change personal information", {
+        duration: 1000,
+      });
+      setEdit(false);
+    } catch (error: any) {
+      toast.error(error?.data?.message);
+    }
+
   };
+
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const input = event.target;
@@ -42,6 +64,8 @@ const PersonalInformationContainer = () => {
 
     input.value = "";
   };
+
+
 
   return (
     <div>
@@ -63,7 +87,7 @@ const PersonalInformationContainer = () => {
             style={{
               background: "var(--color-main)",
               border: "none",
-              color: "var(--color-secondary)", 
+              color: "var(--color-secondary)",
             }}
             onClick={() => setEdit(true)}
             size="large"
@@ -73,20 +97,23 @@ const PersonalInformationContainer = () => {
           </Button>
         </div>
       </div>
+      
       <hr className="my-4" />
 
       {/* personal information */}
-      <div className="mt-10 flex justify-center flex-col xl:flex-row items-center  gap-10">
+      {isLoading ? <ProfileFormSkeleton /> : <div className="mt-10 flex justify-center flex-col xl:flex-row items-center  gap-10">
         <div className="bg-[#fff] h-[365px] md:w-[350px] rounded-xl  flex justify-center items-center  text-text-color">
           <div className="space-y-1 relative">
             <div className="relative group">
-              <Image
-                src={imageUrl || profile}
+              {(data?.data?.profile || imageUrl) ? <Image
+                src={imageUrl || data?.data?.profile}
                 alt="adminProfile"
-                width={1200}
-                height={1200}
-                className="size-36 rounded-full flex justify-center items-center border-4 border-[#55433F]"
-              ></Image>
+                width={144}
+                height={144}
+                className="size-36 object-cover rounded-full flex justify-center items-center"
+              ></Image> : <Avatar className="size-36"> <AvatarFallback className="uppercase text-2xl bg-gray-200 text-black " >
+                {data?.data?.name?.split(" ")?.length > 1 ? data?.data?.name?.charAt(0) + data?.data?.name?.charAt(1) : data?.data?.name?.charAt(0)}
+              </AvatarFallback></Avatar>}
 
               {/* cancel button */}
               {fileName && imageUrl && (
@@ -129,7 +156,6 @@ const PersonalInformationContainer = () => {
                 Input: {
                   colorBgContainer: "#fff",
                   colorText: "#333",
-                  colorTextPlaceholder: "#fff",
                 },
                 Form: {
                   labelColor: "#333",
@@ -145,9 +171,9 @@ const PersonalInformationContainer = () => {
                 marginTop: "25px",
               }}
               initialValues={{
-                name: "James Tracy",
-                email: "enrique@gmail.com",
-                phone: "3000597212",
+                name: data?.data?.name,
+                email: data?.data?.email,
+                phone: data?.data?.phoneNumber,
               }}
             >
               {/*  input  name */}
@@ -165,15 +191,11 @@ const PersonalInformationContainer = () => {
 
               {/*  input  email */}
               <Form.Item label="Email" name="email">
-                {edit ? (
-                  <Input size="large" placeholder="Enter email "></Input>
-                ) : (
-                  <Input
-                    size="large"
-                    placeholder="Enter email"
-                    readOnly
-                  ></Input>
-                )}
+                <Input
+                  size="large"
+                  placeholder="Enter email"
+                  readOnly
+                ></Input>
               </Form.Item>
 
               {/* input  phone number  */}
@@ -195,6 +217,7 @@ const PersonalInformationContainer = () => {
                   size="large"
                   block
                   style={{ border: "none" }}
+                  loading={updateProfileLoading}
                 >
                   Save Change
                 </Button>
@@ -202,7 +225,7 @@ const PersonalInformationContainer = () => {
             </Form>
           </ConfigProvider>
         </div>
-      </div>
+      </div>}
     </div>
   );
 };

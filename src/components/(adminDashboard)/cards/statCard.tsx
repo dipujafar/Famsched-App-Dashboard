@@ -15,7 +15,6 @@ export default function StatCard({
   title,
   growth,
   amount,
-  days,
   increase,
   icon,
 }: TProps) {
@@ -49,8 +48,6 @@ export default function StatCard({
           )}
         </div>
         <p className="xl:text-3xl lg:text-2xl text-xl font-medium ">{amount}</p>
-
-        {days && <h6 className="text-[#7F7F7F]">Last {days} days</h6>}
       </div>
     </div>
   );

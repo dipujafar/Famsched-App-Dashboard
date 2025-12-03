@@ -1,6 +1,5 @@
 "use client";
-
-import { useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -18,36 +17,76 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import LastUpdates from "./LastUpdates";
+import { useCreateSubscriptionMutation, useSingleSubscriptionQuery, useUpdateSubscriptionMutation } from "@/redux/api/subscriptionApi";
+import { Error_Modal } from "@/utils/modals";
+import { toast } from "sonner";
+import EditFromSkeleton from "../Skeleton/EditFromSkeleton";
+import { groupHistoryByDate } from "@/utils/groupHistoryByDate";
 
 export function EditSubscriptionForm() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createSubscription, { isLoading }] = useCreateSubscriptionMutation();
   const isEdit = useSearchParams().get("edit");
+  const { data, isLoading: singleDataLoading } = useSingleSubscriptionQuery(isEdit, { skip: !isEdit });
+  const [updateSubscription, { isLoading: updateLoading }] = useUpdateSubscriptionMutation();
+
+  console.log(data?.data?.updateHistory);
+
+  const historyData = groupHistoryByDate(data?.data?.updateHistory) || [];
+  
+  console.log(historyData);
+
+
 
   const form = useForm<SubscriptionPlanFormData>({
     resolver: zodResolver(subscriptionPlanSchema),
     defaultValues: {
-      planName: "",
-      cost: "0.00",
-      features: "",
+      planName: data?.data?.title,
+      cost: (data?.data?.price)?.toString(),
+      features: data?.data?.description,
+      members: (data?.data?.maxMembers)?.toString(),
     },
   });
 
+  useEffect(() => {
+    form.setValue("planName", data?.data?.title);
+    form.setValue("cost", (data?.data?.price)?.toString());
+    form.setValue("features", data?.data?.description);
+    form.setValue("members", (data?.data?.maxMembers)?.toString());
+  }, [data?.data]);
+
+  if (singleDataLoading && isEdit) return <EditFromSkeleton />
+
+
+
+
   async function onSubmit(data: SubscriptionPlanFormData) {
-    setIsSubmitting(true);
+    const formattedData = {
+      price: data?.cost,
+      title: data?.planName,
+      maxMembers: data?.members,
+      description: data?.features
+    }
+
     try {
-      // Simulate API call
-      console.log("Form submitted:", data);
-      // Replace with your actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      alert("Plan updated successfully!");
+      if (isEdit) {
+        await updateSubscription({ id: isEdit, data: formattedData }).unwrap();
+        toast.success("Successfully updated subscription plan", {
+          duration: 3000
+        });
+        form.reset();
+      } else {
+        await createSubscription(formattedData).unwrap();
+        toast.success("Successfully created subscription plan", {
+          duration: 3000
+        });
+      }
+
       form.reset();
-    } catch (error) {
-      console.error("Error submitting form:", error);
-    } finally {
-      setIsSubmitting(false);
+    } catch (error: any) {
+      Error_Modal({ title: error?.data?.message });
     }
   }
 
@@ -81,8 +120,7 @@ export function EditSubscriptionForm() {
                       <Input
                         placeholder="Enter plan name"
                         {...field}
-                        disabled={isSubmitting}
-                        className="bg-gray-200"
+                        className="bg-gray-200 py-5"
                       />
                     </FormControl>
                     <FormMessage />
@@ -105,9 +143,8 @@ export function EditSubscriptionForm() {
                           type="number"
                           step="0.01"
                           min="0"
-                          className="pl-7 bg-gray-200"
+                          className="pl-7 bg-gray-200 py-5"
                           {...field}
-                          disabled={isSubmitting}
                         />
                       </div>
                     </FormControl>
@@ -126,14 +163,12 @@ export function EditSubscriptionForm() {
                     <FormLabel>How many members can add</FormLabel>
                     <FormControl>
                       <div className="relative">
-
                         <Input
                           placeholder="Enter how many members can add"
                           type="number"
                           min="0"
-                          className=" bg-gray-200"
+                          className=" bg-gray-200 py-5"
                           {...field}
-                          disabled={isSubmitting}
                         />
                       </div>
                     </FormControl>
@@ -159,7 +194,6 @@ export function EditSubscriptionForm() {
                       placeholder="Write here..."
                       className="min-h-40 resize-none bg-gray-200"
                       {...field}
-                      disabled={isSubmitting}
                     />
                   </FormControl>
 
@@ -171,20 +205,21 @@ export function EditSubscriptionForm() {
 
           <Button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isLoading || updateLoading}
+
             style={{
               background: "linear-gradient(90deg, #3C353B 0%, #785E57 100%)",
             }}
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90 group"
           >
-            {isSubmitting ? "Updating..." : "Update"}
+            {isEdit ? "Update" : "Submit"} {(isLoading || updateLoading) && <Loader2 className="animate-spin" />}
             <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 duration-300" />
           </Button>
         </form>
       </Form>
 
       {
-        isEdit && <LastUpdates />
+        isEdit && <LastUpdates data={historyData} />
       }
     </div>
   );

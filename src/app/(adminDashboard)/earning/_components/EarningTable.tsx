@@ -1,33 +1,43 @@
-"use client";
+"use client";;
 import { Image, Input, TableProps } from "antd";
-import { useState } from "react";
 import DataTable from "@/utils/DataTable";
-import UserDetails from "@/components/(adminDashboard)/modals/user/UserDetails";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+import TableSkeleton from "@/components/shared/TableSkeleton";
+import { useDebounce } from "use-debounce";
+import moment from "moment";
+import { useGetEarningQuery } from "@/redux/api/earningApi";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import StatContainer from "./StatContainer";
+import { EarningStatSkeleton } from "./skeleton/EarningStatSkeleton";
 
 type TDataType = {
   key?: number;
-  serial: number;
-  name: string;
-  email: string;
-  date: string;
-  profileImage: string;
-  phoneNumber: string;
-  amount: string;
+  user: any;
 };
 
-const data: TDataType[] = Array.from({ length: 10 }).map((data, inx) => ({
-  key: inx,
-  serial: inx + 1,
-  name: "Cody Fisher",
-  email: "codyfisher@gmail.com",
-  date: "11 Sep, 2025",
-  profileImage: "/user_image.png",
-  phoneNumber: "+9112655423",
-  amount: "$244.00",
-}));
 
 const EarningTable = () => {
-  const [open, setOpen] = useState(false);
+  const page = useSearchParams().get("page") || "1";
+  const limit = useSearchParams().get("limit") || "10";
+  const [searchText, setSearchText] = useState("");
+  const [searchValue] = useDebounce(searchText, 500);
+  const queries: Record<string, string> = {};
+  if (page) queries.page = page;
+  if (limit) queries.limit = limit;
+  if (searchValue) queries.searchTerm = searchValue;
+
+  const { data: earningsData, isLoading } = useGetEarningQuery(queries);
+
+
+
+  if (isLoading) {
+    return <div className="space-y-5">
+      <EarningStatSkeleton />
+      <TableSkeleton length={10} />
+    </div>
+  }
+
 
   const columns: TableProps<TDataType>["columns"] = [
     {
@@ -37,26 +47,28 @@ const EarningTable = () => {
     },
     {
       title: "Name",
-      dataIndex: "name",
       render: (text, record) => (
         <p className="flex items-center gap-x-2">
-          <Image
-            src={record?.profileImage}
+          {record?.user?.profile ? <Image
+            src={record?.user?.profile}
             alt="user_image"
             width={40}
             height={40}
-          />
-          {text}
+            className="rounded-full"
+          /> : <Avatar> <AvatarFallback className="w-full flex-center uppercase text-lg bg-gray-200 text-black " >{record?.user?.name?.charAt(0)} </AvatarFallback></Avatar>
+
+          }
+          <span>{record?.user?.name}</span>
         </p>
       ),
     },
     {
       title: "Email",
-      dataIndex: "email",
+      render: (_, record) => <p>{record?.user?.email}</p>,
     },
     {
       title: "Phone Number",
-      dataIndex: "phoneNumber",
+      render: (_, record) => <p>{record?.user?.phoneNumber}</p>,
     },
     {
       title: "Amount",
@@ -65,18 +77,20 @@ const EarningTable = () => {
 
     {
       title: "Date",
-      dataIndex: "date",
-      align: "center",
+      dataIndex: "createdAt",
+      render: (text) => <p>{moment(text).format("ll")}</p>,
     },
   ];
 
   return (
-    <div className="bg-section-bg rounded-3xl">
-      <div className="max-w-[400px] ml-auto mb-2 pt-2">
-        <Input.Search placeholder="Search here..." size="large" />
+    <div className="space-y-5">
+      <StatContainer earningStatData={earningsData?.data?.earnings} />
+      <div className="bg-section-bg rounded-3xl">
+        <div className="max-w-[400px] ml-auto mb-2 pt-2">
+          <Input.Search placeholder="Search here..." size="large" onChange={(e) => setSearchText(e.target.value)} />
+        </div>
+        <DataTable columns={columns} data={earningsData?.data?.transactions?.data} pageSize={Number(limit)} total={earningsData?.data?.transactions?.meta?.total}></DataTable>
       </div>
-      <DataTable columns={columns} data={data} pageSize={10}></DataTable>
-      {/* <UserDetails open={open} setOpen={setOpen}></UserDetails> */}
     </div>
   );
 };

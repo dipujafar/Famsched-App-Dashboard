@@ -13,6 +13,7 @@ import Link from "next/link";
 
 interface PricingCardProps {
   title: string;
+  id: string
   subtitle: string;
   price: string;
   description: string;
@@ -21,6 +22,7 @@ interface PricingCardProps {
 
 export function SubscriptionCard({
   title,
+  id,
   subtitle,
   price,
   description,
@@ -46,10 +48,10 @@ export function SubscriptionCard({
         </div>
 
         {/* Description */}
-        <p className="mb-3  leading-relaxed text-[#5E5E60]">{description}</p>
+        <p className="mb-3  leading-relaxed text-[#5E5E60] line-clamp-2">{description}</p>
 
         {/* Button */}
-        <Link href={`/subscription/edit-subscription?edit=1`}>
+        <Link href={`/subscription/edit-subscription?edit=${id}`}>
           <Button
             variant="outline"
             className="w-full bg-transparent group py-4 mt-4 border border-main-color"

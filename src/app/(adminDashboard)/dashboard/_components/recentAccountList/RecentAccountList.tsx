@@ -1,5 +1,5 @@
 "use client";;
-import { Image, message, PopconfirmProps, TableProps } from "antd";
+import { Image, TableProps } from "antd";
 import { useState } from "react";
 import DataTable from "@/utils/DataTable";
 import { Eye } from "lucide-react";

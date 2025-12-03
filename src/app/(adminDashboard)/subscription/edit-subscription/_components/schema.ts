@@ -12,7 +12,7 @@ export const subscriptionPlanSchema = z.object({
       (val) => !isNaN(Number.parseFloat(val)) && Number.parseFloat(val) >= 0,
       "Cost must be a valid number greater than or equal to 0"
     ),
-  members: z.number().min(1, "Members must be at least 1"),
+  members: z.string().min(1, "Members must be at least 1"),
   features: z
     .string()
     .min(1, "Features description is required")
