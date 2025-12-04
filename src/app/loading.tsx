@@ -1,20 +1,8 @@
-import { ConfigProvider, Spin } from "antd";
+import Loading from "@/components/shared/Loading";
 
 const loading = () => {
   return (
-    <div className=" h-screen w-full flex justify-center items-center">
-      <ConfigProvider
-        theme={{
-          components: {
-            Spin: {
-              colorPrimary: "#785E57",
-            },
-          },
-        }}
-      >
-        <Spin size="large" />
-      </ConfigProvider>
-    </div>
+    <Loading />
   );
 };
 

@@ -1,25 +1,26 @@
+import moment from 'moment'
 import React from 'react'
-const updateData = [
-    {
-        date: "22-09-2023",
-        data: "In today’s rapidly evolving world, the importance of education cannot be overstated. Technological advancements, global interconnectivity, and the proliferation of information demand that we continuously adapt and expand our understanding. An educated individual is better prepared to tackle these challenges, innovate, and drive progress. Moreover, education promotes equality and social justice, providing marginalized groups with the means to uplift themselves and break cycles of poverty."
-    },
-    {
-        date: "28-09-2023",
-        data: "The importance of education cannot be overstated. Technological advancements, global interconnectivity, and the proliferation of information demand that we continuously adapt and expand our understanding. An educated individual is better prepared to tackle these challenges, innovate, and drive progress. Moreover, education promotes equality and social justice, providing marginalized groups with the means to uplift themselves and break cycles of poverty."
 
-    },
-]
 
-export default function LastUpdatesContent() {
+export default function LastUpdatesContent({ data }: any) {
     return (
         <div className='mt-5'>
             <h4 className='text-2xl font-semibold mb-2'>Last Updates</h4>
             <div className='space-y-3' >
                 {
-                    updateData?.map((item, index) => (
+                    data?.slice(0, 19)?.map((item: any, index: number) => (
                         <div key={index} className='border rounded p-3'>
-                            <h5 className='text-xl'>Data: {item?.date} </h5>
+                            <h5 className='text-xl font-medium'>Date:  {moment(data?.updatedAt).format("ll")} </h5>
+                            <div className='flex flex-col lg:flex-row lg:gap-4 gap-2 mt-2'>
+                                <div className='flex-1 border-r'>
+                                    <h4 className='text-lg font-medium'>Old Content :</h4>
+                                    <p dangerouslySetInnerHTML={{ __html: item?.oldValue }} />
+                                </div>
+                                <div className='flex-1'>
+                                    <h4 className='text-lg font-medium'>New Content</h4>
+                                    <p dangerouslySetInnerHTML={{ __html: item?.newValue }} />
+                                </div>
+                            </div>
                             <p className='text-lg'>{item?.data}</p>
                         </div>
 
